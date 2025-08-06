@@ -1,70 +1,156 @@
 package com.example.speedtest
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.net.HttpURLConnection
+import kotlinx.coroutines.*
+import java.io.InputStream
 import java.net.URL
-import kotlin.system.measureTimeMillis
+import java.text.DecimalFormat
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var speedTextView: TextView
-    private lateinit var startButton: Button
+    private lateinit var pingTextView: TextView
+    private lateinit var downloadButton: Button
+    private lateinit var pingButton: Button
+    private lateinit var unitSpinner: Spinner
+
+    private var downloadJob: Job? = null
+    private var pingJob: Job? = null
+    private var isDownloading = false
+    private var isPinging = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         speedTextView = findViewById(R.id.speedTextView)
-        startButton = findViewById(R.id.startButton)
+        pingTextView = findViewById(R.id.pingTextView)
+        downloadButton = findViewById(R.id.startDownloadButton)
+        pingButton = findViewById(R.id.startPingButton)
+        unitSpinner = findViewById(R.id.unitSpinner)
 
-        startButton.setOnClickListener {
-            testDownloadSpeed()
+        downloadButton.setOnClickListener {
+            if (isDownloading) {
+                stopDownload()
+            } else {
+                startDownload()
+            }
+        }
+
+        pingButton.setOnClickListener {
+            if (isPinging) {
+                stopPing()
+            } else {
+                startPing()
+            }
         }
     }
 
-    private fun testDownloadSpeed() {
-        speedTextView.text = "Testing..."
+    private fun startDownload() {
+        isDownloading = true
+        downloadButton.text = "Stop Download"
+        speedTextView.text = "Starting download..."
 
-        CoroutineScope(Dispatchers.IO).launch {
+        downloadJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL("https://github.com/dogpoopy/app-test/releases/download/v1.0/speedtestfile")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-                connection.instanceFollowRedirects = true
-                connection.connect()
-
-                val input = connection.inputStream
-                val buffer = ByteArray(4096)
-                var bytesRead: Int
+                val connection = url.openConnection()
+                val input: InputStream = connection.getInputStream()
+                val buffer = ByteArray(8192)
                 var totalBytes = 0L
+                var lastBytes = 0L
+                var startTime = System.currentTimeMillis()
 
-                val timeTakenMillis = measureTimeMillis {
-                    while (input.read(buffer).also { bytesRead = it } != -1) {
-                        totalBytes += bytesRead
+                while (isActive) {
+                    val bytesRead = input.read(buffer)
+                    if (bytesRead == -1) break
+                    totalBytes += bytesRead
+
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - startTime >= 1000) {
+                        val bytesThisSecond = totalBytes - lastBytes
+                        lastBytes = totalBytes
+                        val selectedUnit = unitSpinner.selectedItem.toString()
+                        val speed = if (selectedUnit == "MB/s") {
+                            bytesThisSecond / 1_000_000.0
+                        } else {
+                            (bytesThisSecond * 8) / 1_000_000.0
+                        }
+
+                        val formattedSpeed = DecimalFormat("#.##").format(speed)
+                        withContext(Dispatchers.Main) {
+                            speedTextView.text = "Download speed: $formattedSpeed $selectedUnit"
+                        }
+
+                        startTime = currentTime
                     }
-                    input.close()
                 }
 
-                val seconds = timeTakenMillis / 1000.0
-                val speedMbps = (totalBytes * 8) / (seconds * 1_000_000)
-
-                runOnUiThread {
-                    speedTextView.text = "Download speed: %.2f Mbps".format(speedMbps)
+                input.close()
+                withContext(Dispatchers.Main) {
+                    speedTextView.append("\nDownload stopped.")
                 }
-
             } catch (e: Exception) {
-                Log.e("SpeedTest", "Error during speed test", e)
-                runOnUiThread {
-                    speedTextView.text = "Error: ${e.message ?: "Unknown error"}"
+                withContext(Dispatchers.Main) {
+                    speedTextView.text = "Download error: ${e.localizedMessage}"
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    downloadButton.text = "Start Download"
+                    isDownloading = false
                 }
             }
         }
+    }
+
+    private fun stopDownload() {
+        downloadJob?.cancel()
+        downloadButton.text = "Start Download"
+        isDownloading = false
+        speedTextView.text = "Download stopped."
+    }
+
+    private fun startPing() {
+        isPinging = true
+        pingButton.text = "Stop Ping"
+
+        pingJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val process = ProcessBuilder("ping", "google.com")
+                    .redirectErrorStream(true)
+                    .start()
+
+                val reader = process.inputStream.bufferedReader()
+
+                while (isActive) {
+                    val line = reader.readLine() ?: break
+                    val match = Regex("time=([0-9.]+) ms").find(line)
+                    match?.groupValues?.get(1)?.let { pingTime ->
+                        withContext(Dispatchers.Main) {
+                            pingTextView.text = "Ping: ${pingTime}ms"
+                        }
+                    }
+                }
+
+                process.destroy()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    pingTextView.text = "Ping error: ${e.localizedMessage}"
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    pingButton.text = "Start Ping"
+                    isPinging = false
+                }
+            }
+        }
+    }
+
+    private fun stopPing() {
+        pingJob?.cancel()
+        pingTextView.text = "Ping: -"
+        pingButton.text = "Start Ping"
+        isPinging = false
     }
 }

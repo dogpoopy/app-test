@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SpeedTestApp</string>
+    <string-array name="unit_options">
+        <item>Mbps</item>
+        <item>MB/s</item>
+    </string-array>
+</resources>

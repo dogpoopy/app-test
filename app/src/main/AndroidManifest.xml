@@ -9,7 +9,7 @@
         android:allowBackup="true"
         android:label="SpeedTestApp"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/Theme.SpeedTest">
         <activity
             android:name=".MainActivity"
             android:exported="true">
