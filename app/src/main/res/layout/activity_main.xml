@@ -3,11 +3,10 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground"
     android:orientation="vertical"
-    android:padding="24dp"
     android:gravity="center"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:padding="24dp"
+    android:background="@android:color/black">
 
     <TextView
         android:id="@+id/speedTextView"
@@ -29,8 +28,8 @@
         android:id="@+id/unitSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:entries="@array/unit_options"
-        android:layout_marginBottom="40dp" />
+        android:layout_marginBottom="40dp"
+        android:entries="@array/unit_options" />
 
     <TextView
         android:id="@+id/pingTextView"
@@ -45,5 +44,13 @@
         android:id="@+id/startPingButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Ping" />
+        android:text="Start Ping"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/showPingLogsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Ping Logs" />
+
 </LinearLayout>

@@ -2,6 +2,7 @@ package com.example.speedtest
 
 import android.os.Bundle
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.*
 import java.io.InputStream
@@ -14,11 +15,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var downloadButton: Button
     private lateinit var pingButton: Button
     private lateinit var unitSpinner: Spinner
+    private lateinit var showPingLogsButton: Button
 
     private var downloadJob: Job? = null
     private var pingJob: Job? = null
     private var isDownloading = false
     private var isPinging = false
+    private var pingLogText = StringBuilder()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,21 +32,18 @@ class MainActivity : AppCompatActivity() {
         downloadButton = findViewById(R.id.startDownloadButton)
         pingButton = findViewById(R.id.startPingButton)
         unitSpinner = findViewById(R.id.unitSpinner)
+        showPingLogsButton = findViewById(R.id.showPingLogsButton)
 
         downloadButton.setOnClickListener {
-            if (isDownloading) {
-                stopDownload()
-            } else {
-                startDownload()
-            }
+            if (isDownloading) stopDownload() else startDownload()
         }
 
         pingButton.setOnClickListener {
-            if (isPinging) {
-                stopPing()
-            } else {
-                startPing()
-            }
+            if (isPinging) stopPing() else startPing()
+        }
+
+        showPingLogsButton.setOnClickListener {
+            showPingLogsDialog()
         }
     }
 
@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity() {
     private fun startPing() {
         isPinging = true
         pingButton.text = "Stop Ping"
+        pingLogText.clear()
 
         pingJob = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -127,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                     val line = reader.readLine() ?: break
                     val match = Regex("time=([0-9.]+) ms").find(line)
                     match?.groupValues?.get(1)?.let { pingTime ->
+                        pingLogText.appendLine("Ping: ${pingTime}ms")
                         withContext(Dispatchers.Main) {
                             pingTextView.text = "Ping: ${pingTime}ms"
                         }
@@ -152,5 +154,14 @@ class MainActivity : AppCompatActivity() {
         pingTextView.text = "Ping: -"
         pingButton.text = "Start Ping"
         isPinging = false
+    }
+
+    private fun showPingLogsDialog() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Ping Logs")
+            .setMessage(pingLogText.toString().ifBlank { "No logs yet." })
+            .setPositiveButton("Close", null)
+            .create()
+        dialog.show()
     }
 }
