@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
         pingJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val process = ProcessBuilder("ping", "google.com")
+                val process = ProcessBuilder("ping", "8.8.8.8")
                     .redirectErrorStream(true)
                     .start()
 
