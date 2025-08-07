@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,12 +13,12 @@
         android:id="@+id/speedTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Download speed: -"
+        android:text="Download speed: 0.00 Mbps"
         android:textSize="20sp"
         android:textColor="@android:color/white"
         android:layout_marginBottom="20dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/startDownloadButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,19 +36,19 @@
         android:id="@+id/pingTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ping: -"
+        android:text="Ping: 0.00ms"
         android:textSize="20sp"
         android:textColor="@android:color/white"
         android:layout_marginBottom="20dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/startPingButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Ping"
         android:layout_marginBottom="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/showPingLogsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

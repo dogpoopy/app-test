@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.net.URL
@@ -23,7 +24,12 @@ class MainActivity : AppCompatActivity() {
     private var isPinging = false
     private var pingLogText = StringBuilder()
 
+    companion object {
+        private const val BYTES_PER_MB = 1_000_000.0
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        DynamicColors.applyToActivitiesIfAvailable(application)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -33,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         pingButton = findViewById(R.id.startPingButton)
         unitSpinner = findViewById(R.id.unitSpinner)
         showPingLogsButton = findViewById(R.id.showPingLogsButton)
+
+        speedTextView.text = getString(R.string.default_download_speed)
+        pingTextView.text = getString(R.string.default_ping)
 
         downloadButton.setOnClickListener {
             if (isDownloading) stopDownload() else startDownload()
@@ -49,8 +58,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startDownload() {
         isDownloading = true
-        downloadButton.text = "Stop Download"
-        speedTextView.text = "Starting download..."
+        downloadButton.text = getString(R.string.stop_download)
+        speedTextView.text = getString(R.string.starting_download)
 
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -73,32 +82,31 @@ class MainActivity : AppCompatActivity() {
                         lastBytes = totalBytes
                         val selectedUnit = unitSpinner.selectedItem.toString()
                         val speed = if (selectedUnit == "MB/s") {
-                            bytesThisSecond / 1_000_000.0
+                            bytesThisSecond / BYTES_PER_MB
                         } else {
-                            (bytesThisSecond * 8) / 1_000_000.0
+                            (bytesThisSecond * 8) / BYTES_PER_MB
                         }
 
                         val formattedSpeed = DecimalFormat("#.##").format(speed)
                         withContext(Dispatchers.Main) {
-                            speedTextView.text = "Download speed: $formattedSpeed $selectedUnit"
+                            speedTextView.text = getString(R.string.download_speed, formattedSpeed, selectedUnit)
                         }
-
                         startTime = currentTime
                     }
                 }
 
                 input.close()
-                withContext(Dispatchers.Main) {
-                    speedTextView.append("\nDownload stopped.")
-                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     speedTextView.text = "Download error: ${e.localizedMessage}"
                 }
             } finally {
                 withContext(Dispatchers.Main) {
-                    downloadButton.text = "Start Download"
+                    downloadButton.text = getString(R.string.start_download)
                     isDownloading = false
+                    if (speedTextView.text.startsWith(getString(R.string.starting_download))) {
+                        speedTextView.text = getString(R.string.default_download_speed)
+                    }
                 }
             }
         }
@@ -106,14 +114,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopDownload() {
         downloadJob?.cancel()
-        downloadButton.text = "Start Download"
+        downloadButton.text = getString(R.string.start_download)
         isDownloading = false
-        speedTextView.text = "Download stopped."
+        speedTextView.text = getString(R.string.default_download_speed)
     }
 
     private fun startPing() {
         isPinging = true
-        pingButton.text = "Stop Ping"
+        pingButton.text = getString(R.string.stop_ping)
         pingLogText.clear()
 
         pingJob = CoroutineScope(Dispatchers.IO).launch {
@@ -130,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                     match?.groupValues?.get(1)?.let { pingTime ->
                         pingLogText.appendLine("Ping: ${pingTime}ms")
                         withContext(Dispatchers.Main) {
-                            pingTextView.text = "Ping: ${pingTime}ms"
+                            pingTextView.text = getString(R.string.ping_value, pingTime)
                         }
                     }
                 }
@@ -142,8 +150,11 @@ class MainActivity : AppCompatActivity() {
                 }
             } finally {
                 withContext(Dispatchers.Main) {
-                    pingButton.text = "Start Ping"
+                    pingButton.text = getString(R.string.start_ping)
                     isPinging = false
+                    if (!pingTextView.text.contains("ms")) {
+                        pingTextView.text = getString(R.string.default_ping)
+                    }
                 }
             }
         }
@@ -151,17 +162,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopPing() {
         pingJob?.cancel()
-        pingTextView.text = "Ping: -"
-        pingButton.text = "Start Ping"
+        pingTextView.text = getString(R.string.default_ping)
+        pingButton.text = getString(R.string.start_ping)
         isPinging = false
     }
 
     private fun showPingLogsDialog() {
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Ping Logs")
-            .setMessage(pingLogText.toString().ifBlank { "No logs yet." })
+        AlertDialog.Builder(this)
+            .setTitle(R.string.ping_logs_title)
+            .setMessage(pingLogText.toString().ifBlank { getString(R.string.no_logs) })
             .setPositiveButton("Close", null)
-            .create()
-        dialog.show()
+            .show()
     }
 }

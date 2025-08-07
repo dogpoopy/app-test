@@ -1,5 +1,20 @@
 <resources>
     <string name="app_name">SpeedTestApp</string>
+    <string name="start_download">Start Download</string>
+    <string name="stop_download">Stop Download</string>
+    <string name="start_ping">Start Ping</string>
+    <string name="stop_ping">Stop Ping</string>
+    <string name="show_ping_logs">Show Ping Logs</string>
+    <string name="ping_logs_title">Ping Logs</string>
+    <string name="no_logs">No logs yet.</string>
+
+    <string name="default_download_speed">Download speed: 0.00</string>
+    <string name="default_ping">Ping: 0.00ms</string>
+    <string name="starting_download">Starting download...</string>
+
+    <string name="download_speed">Download speed: %1$s %2$s</string>
+    <string name="ping_value">Ping: %1$sms</string>
+
     <string-array name="unit_options">
         <item>Mbps</item>
         <item>MB/s</item>
