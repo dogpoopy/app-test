@@ -9,7 +9,8 @@
         android:allowBackup="true"
         android:label="SpeedTestApp"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SpeedTest">
+        android:theme="@style/Theme.SpeedTest"
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true">
