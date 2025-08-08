@@ -9,6 +9,13 @@
     android:padding="24dp"
     android:background="@android:color/black">
 
+    <com.example.speedtest.ui.SpeedometerView
+        android:id="@+id/speedometerView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal" />
+
     <TextView
         android:id="@+id/speedTextView"
         android:layout_width="wrap_content"

@@ -4,25 +4,31 @@ import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.speedtest.ui.SpeedometerView
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.net.URL
-import java.text.DecimalFormat
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var speedTextView: TextView
     private lateinit var pingTextView: TextView
     private lateinit var downloadButton: Button
     private lateinit var pingButton: Button
     private lateinit var unitSpinner: Spinner
     private lateinit var showPingLogsButton: Button
+    private lateinit var speedometerView: SpeedometerView
 
     private var downloadJob: Job? = null
     private var pingJob: Job? = null
+    private var animateJob: Job? = null
     private var isDownloading = false
     private var isPinging = false
     private var pingLogText = StringBuilder()
+
+    private var displayedSpeed = 0f
 
     companion object {
         private const val BYTES_PER_MB = 1_000_000.0
@@ -39,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         pingButton = findViewById(R.id.startPingButton)
         unitSpinner = findViewById(R.id.unitSpinner)
         showPingLogsButton = findViewById(R.id.showPingLogsButton)
+        speedometerView = findViewById(R.id.speedometerView)
 
         speedTextView.text = getString(R.string.default_download_speed)
         pingTextView.text = getString(R.string.default_ping)
@@ -81,16 +88,20 @@ class MainActivity : AppCompatActivity() {
                         val bytesThisSecond = totalBytes - lastBytes
                         lastBytes = totalBytes
                         val selectedUnit = unitSpinner.selectedItem.toString()
-                        val speed = if (selectedUnit == "MB/s") {
+                        val rawSpeed = if (selectedUnit == "MB/s") {
                             bytesThisSecond / BYTES_PER_MB
                         } else {
                             (bytesThisSecond * 8) / BYTES_PER_MB
                         }
 
-                        val formattedSpeed = DecimalFormat("#.##").format(speed)
+                        val displaySpeed = String.format("%.2f", rawSpeed)
+                        val speedMbps = if (selectedUnit == "Mbps") rawSpeed else rawSpeed * 8
+
                         withContext(Dispatchers.Main) {
-                            speedTextView.text = getString(R.string.download_speed, formattedSpeed, selectedUnit)
+                            speedTextView.text = getString(R.string.download_speed, displaySpeed, selectedUnit)
+                            animateSpeedChange(speedMbps.toFloat())
                         }
+
                         startTime = currentTime
                     }
                 }
@@ -104,6 +115,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     downloadButton.text = getString(R.string.start_download)
                     isDownloading = false
+                    animateSpeedChange(0f)
                     if (speedTextView.text.startsWith(getString(R.string.starting_download))) {
                         speedTextView.text = getString(R.string.default_download_speed)
                     }
@@ -112,11 +124,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun animateSpeedChange(targetSpeed: Float) {
+        animateJob?.cancel()
+        animateJob = CoroutineScope(Dispatchers.Main).launch {
+            while (abs(displayedSpeed - targetSpeed) > 0.1f) {
+                displayedSpeed += (targetSpeed - displayedSpeed) * 0.2f
+                speedometerView.setSpeed(displayedSpeed)
+                delay(16)
+            }
+            displayedSpeed = targetSpeed
+            speedometerView.setSpeed(displayedSpeed)
+        }
+    }
+
     private fun stopDownload() {
         downloadJob?.cancel()
         downloadButton.text = getString(R.string.start_download)
         isDownloading = false
         speedTextView.text = getString(R.string.default_download_speed)
+        animateSpeedChange(0f)
     }
 
     private fun startPing() {
