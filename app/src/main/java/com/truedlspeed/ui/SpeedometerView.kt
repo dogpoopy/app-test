@@ -1,4 +1,4 @@
-package com.example.speedtest.ui
+package com.truedlspeed.ui
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -6,7 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import com.example.speedtest.R
+import com.truedlspeed.R
 import kotlin.math.*
 
 class SpeedometerView @JvmOverloads constructor(

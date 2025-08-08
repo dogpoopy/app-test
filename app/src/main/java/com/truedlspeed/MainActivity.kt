@@ -1,10 +1,10 @@
-package com.example.speedtest
+package com.truedlspeed
 
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.speedtest.ui.SpeedometerView
+import com.truedlspeed.ui.SpeedometerView
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
 import java.io.InputStream

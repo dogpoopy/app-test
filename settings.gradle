@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SpeedTestApp"
+rootProject.name = "TrueDLspeed"
 include(":app")

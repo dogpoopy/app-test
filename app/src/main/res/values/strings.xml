@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SpeedTestApp</string>
+    <string name="app_name">TrueDLspeed</string>
     <string name="start_download">Start Download</string>
     <string name="stop_download">Stop Download</string>
     <string name="start_ping">Start Ping</string>

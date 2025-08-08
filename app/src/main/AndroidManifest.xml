@@ -7,7 +7,7 @@
     
     <application
         android:allowBackup="true"
-        android:label="SpeedTestApp"
+        android:label="TrueDLspeed"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpeedTest"
         android:icon="@mipmap/ic_launcher">

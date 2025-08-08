@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.speedtest"
+    namespace = "com.truedlspeed"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.speedtest"
-        minSdk = 31
+        applicationId = "com.truedlspeed"
+        minSdk = 29
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
