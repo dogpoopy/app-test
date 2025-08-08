@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("https://github.com/dogpoopy/app-test/releases/download/v1.0/speedtestfile")
+                val url = URL("https://github.com/dogpoopy/speed-test-app/releases/download/v1.0/speedtestfile")
                 val connection = url.openConnection()
                 val input: InputStream = connection.getInputStream()
                 val buffer = ByteArray(8192)
